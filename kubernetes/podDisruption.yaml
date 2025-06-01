@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cors-proxy-pdb
+  namespace: cors-proxy
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: cors-proxy

@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cors-proxy-config
+  namespace: cors-proxy
+data:
+  default.conf: |
+    # Performance optimizations at the top level
+    upstream backend {
+        server httpbingo.org:80;
+        # Connection pooling
+        keepalive 32;
+        keepalive_requests 1000;
+        keepalive_timeout 60s;
+    }
+
+    # Enable gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
+
+    server {
+        listen 80;
+        server_name _;
+
+        # Performance settings
+        tcp_nodelay on;
+        tcp_nopush on;
+        sendfile on;
+        
+        # Connection settings
+        keepalive_timeout 65;
+        keepalive_requests 1000;
+
+        location /health {
+            access_log off;
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+            add_header Content-Type text/plain always;
+            return 200 "OK\n";
+        }
+
+        location / {
+            # Handle preflight OPTIONS requests locally (faster)
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            # Proxy configuration with performance optimizations
+            proxy_pass http://backend;
+            
+            # Essential headers
+            proxy_set_header Host httpbingo.org;
+            proxy_set_header Connection "";
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Aggressive timeout settings for better performance
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 10s;
+            proxy_read_timeout 15s;
+            
+            # Performance optimizations
+            proxy_buffering on;
+            proxy_buffer_size 4k;
+            proxy_buffers 8 4k;
+            proxy_busy_buffers_size 8k;
+            proxy_http_version 1.1;
+            
+            # Enable connection reuse
+            proxy_set_header Connection "";
+
+            # Hide any CORS headers from backend to avoid conflicts
+            proxy_hide_header 'Access-Control-Allow-Origin';
+            proxy_hide_header 'Access-Control-Allow-Methods';
+            proxy_hide_header 'Access-Control-Allow-Headers';
+            
+            # Add CORS headers to ALL responses (including errors)
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+        }
+
+        # Handle errors with CORS headers
+        location @handle_errors {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+            add_header 'Content-Type' 'application/json' always;
+            return 404 '{"error": "Not Found"}';
+        }
+
+        # Error handling
+        proxy_intercept_errors on;
+        error_page 404 = @handle_errors;
+        error_page 500 502 503 504 = @handle_errors;
+    }
