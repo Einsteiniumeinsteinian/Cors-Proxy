@@ -24,11 +24,6 @@ output "cluster_oidc_issuer_url" {
   value       = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
 
-# output "node_groups" {
-#   description = "EKS node groups"
-#   value       = aws_eks_node_group.main.arn
-# }
-
 output "vpc_id" {
   description = "ID of the VPC where the cluster and workers are deployed"
   value       = aws_vpc.main.id

@@ -179,15 +179,6 @@ resource "aws_security_group" "eks_nodes" {
   cidr_blocks = ["0.0.0.0/0"] # Or restrict to known IP/NLB source range
 }
 
-  # 🔥 NEW RULE: Allow NLB health checks on NodePort (32213)
-  ingress {
-    description = "Allow NLB health checks on NodePort"
-    from_port   = 30000  # Start of NodePort range (30000-32767)
-    to_port     = 32767  # End of NodePort range
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Or restrict to VPC CIDR if preferred
-  }
-
   ingress {
     description     = "Cluster API to node"
     from_port       = 443

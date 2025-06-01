@@ -5,7 +5,6 @@ export const options = {
   vus: 5, // Reduced load for smoke test
   duration: '30s', // Shorter duration
   thresholds: {
-    // Very lenient thresholds that should always pass for a smoke test
     http_req_duration: ['p(95)<500'], // 2 seconds is very generous
     'http_req_failed{expectedError:not_found}': ['rate<1'], // allow all for this tag
     'http_req_failed{expectedError:!not_found}': ['rate<0.1'], // apply normal threshold
