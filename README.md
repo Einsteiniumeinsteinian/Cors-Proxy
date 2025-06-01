@@ -203,7 +203,7 @@ cors-proxy-kubernetes/
 │   │   └── aws-load-balancer-policy.json      # Custom AWS LB listener policy config
 
 ├── kubernetes/                                # Kubernetes YAML manifests
-│   ├── configMap.yaml                         # Proxy configuration via environment variables
+│   ├── configMap.yaml                         # nginx configuration
 │   ├── deployment.yaml                        # CORS proxy Deployment
 │   ├── service.yaml                           # ClusterIP or LoadBalancer service
 │   ├── ingress.yaml                           # Ingress config for external access
@@ -229,7 +229,7 @@ The system is designed to meet the following performance criteria:
 | Metric | Target | Description |
 |--------|--------|-------------|
 | **Baseline RPS** | 1,000 | Sustained requests per second |
-| **Burst Capacity** | 5,000 | Peak requests per second |
+| **Burst Capacity** | 10,000 | Peak requests per second |
 | **Error Rate** | < 1% | Maximum acceptable error rate |
 | **Availability** | 99.9% | Uptime SLA target |
 
