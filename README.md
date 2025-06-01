@@ -184,37 +184,42 @@ chmod +x scripts/setup.sh
 
 ```tree
 cors-proxy-kubernetes/
-├── README.md
-├── terraform/                    # Infrastructure as Code
-│   ├── main.tf                  # Main Terraform configuration
-│   ├── variables.tf             # Variable definitions
-│   ├── outputs.tf               # Output values
-│   ├── versions.tf              # Provider versions
-│   └── environments/
-│       ├── production.tfvars    # Production variables
-│       └── staging.tfvars       # Staging variables
-├── k8s/                         # Kubernetes manifests
-│   ├── namespace.yaml           # Namespace definition
-│   ├── configmap.yaml           # CORS proxy configuration
-│   ├── deployment.yaml          # Application deployment
-│   ├── service.yaml             # Service definition
-│   ├── hpa.yaml                 # Horizontal Pod Autoscaler
-│   ├── ingress.yaml             # Load balancer configuration
-│   └── monitoring/              # Monitoring setup
-│       ├── prometheus.yaml      # Prometheus configuration
-│       └── grafana.yaml         # Grafana dashboards
-├── tests/                       # Load testing scripts
-│   ├── baseline-test.js         # 1000 RPS baseline test
-│   ├── spike-test.js            # Spike load test
-│   ├── stress-test.js           # Stress test to failure
-│   └── endurance-test.js        # Long-running endurance test
-├── docker/                      # Container definitions
-│   ├── Dockerfile               # CORS proxy container
-│   └── nginx.conf               # Nginx configuration
-└── docs/                        # Additional documentation
-    ├── ARCHITECTURE.md          # Detailed architecture
-    ├── MONITORING.md            # Monitoring setup
-    └── TROUBLESHOOTING.md       # Common issues
+├── README.md                                  # Project overview and usage guide
+
+├── Documents/                                 # Documentation and assets
+│   ├── Architecture.png                       # OLD architecture diagram (deprecated)
+│   ├── Architecture.txt                       # Notes or ASCII version of architecture
+│   ├── DevOps Coding Challenge.pdf            # Challenge instructions or assignment
+
+├── terraform/                                 # Infrastructure as Code (IaC)
+│   ├── providers.tf                           # AWS provider and backend configs
+│   ├── variables.tf                           # All variable declarations
+│   ├── outputs.tf                             # Output values like endpoint URLs
+│   ├── eks.tf                                 # EKS cluster and node group resources
+│   ├── vpc.tf                                 # VPC, subnets, route tables, etc.
+│   ├── data.tf                                # Data sources (e.g., AMI, IAM roles)
+│   ├── k8.tf                                  # Helm releases: metrics-server, autoscaler, ALB controller
+│   ├── jsons/
+│   │   └── aws-load-balancer-policy.json      # Custom AWS LB listener policy config
+
+├── kubernetes/                                # Kubernetes YAML manifests
+│   ├── configMap.yaml                         # Proxy configuration via environment variables
+│   ├── deployment.yaml                        # CORS proxy Deployment
+│   ├── service.yaml                           # ClusterIP or LoadBalancer service
+│   ├── ingress.yaml                           # Ingress config for external access
+│   ├── hpa.yaml                               # HorizontalPodAutoscaler for autoscaling
+│   ├── podDisruption.yaml                     # PodDisruptionBudget for high availability
+
+├── k6/                                        # Load testing scripts using k6
+│   ├── load-test.js                           # Load test ramping up to 2500 VUs
+│   ├── smoke-test.js                          # Light, fast test to validate health
+
+├── scripts/                                   # Utility shell scripts
+│   ├── setup.sh                               # Deploys Terraform infra and K8s resources
+│   ├── test.sh                                # Runs k6 tests locally or in cluster
+
+└── docs/                                      # Extra documentation (optional if needed)
+    ├── ARCHITECTURE.md                        # Explanation with image reference
 ```
 
 ## 📊 Performance Targets
